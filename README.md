@@ -34,3 +34,49 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+import { NextResponse } from "next/server";
+import { auth } from "./auth"; // On utilise directement NextAuth
+
+export async function middleware(req: Request) {
+  const session = await auth(); // Récupère la session actuelle
+
+  if (!session) {
+    return NextResponse.redirect(new URL("/auth/signin", req.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/admin/:path*", "/dashboard/:path*"], // Protège les routes admin et dashboard
+};
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+import { NextResponse } from "next/server";
+
+export async function POST(req: Request) {
+  try {
+    const { email, password } = await req.json();
+
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return NextResponse.json({ message: "Cet utilisateur existe déjà" }, { status: 400 });
+    }
+
+    // Hacher le mot de passe
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Créer un nouvel utilisateur
+    const user = await prisma.user.create({
+      data: {
+        email,
+        hashedPassword,
+      },
+    });
+
+    return NextResponse.json(user, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ message: "Erreur interne du serveur" }, { status: 500 });
+  }
+}
