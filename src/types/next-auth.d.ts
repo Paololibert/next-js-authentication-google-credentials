@@ -13,7 +13,7 @@ declare module "next-auth" {
       role?: {
         name: string
       }
-      permissions?: string[] | string
+        permissions?: string[] | string
     }
   }
 }

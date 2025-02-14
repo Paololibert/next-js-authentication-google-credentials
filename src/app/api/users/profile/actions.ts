@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import bcrypt from 'bcryptjs'
 
-
 // Schéma simplifié sans rôle ni permissions
 const UpdateProfileSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères").optional(),
@@ -53,65 +52,51 @@ export async function getProfile() {
 
 export async function updateProfile(formData: FormData) {
   try {
-    const session = await auth()
-    
+    const session = await auth();
+
     if (!session?.user) {
-      throw new Error("Non authentifié")
+      throw new Error("Non authentifié");
     }
 
     const parsed = UpdateProfileSchema.safeParse({
-      name: formData.get('name') || undefined,
-      email: formData.get('email') || undefined,
-      password: formData.get('password') || undefined,
-    })
+      name: formData.get("name") || undefined,
+      email: formData.get("email") || undefined,
+      password: formData.get("password") || undefined,
+    });
 
     if (!parsed.success) {
-      throw new Error("Données invalides")
+      throw new Error("Données invalides");
     }
 
-    const { name, email, password } = parsed.data
-    const image = formData.get('image') as File || undefined
+    const { name, email, password } = parsed.data;
 
     // Préparer les données de mise à jour
-    const updateData = {
-      name,
-      email,
-    }
+    const updateData: { name?: string; email?: string; hashedPassword?: string } = {};
 
-    // Ajouter le mot de passe s'il est fourni
-    if (password) {
-      updateData.hashedPassword = await bcrypt.hash(password, 10)
-    }
-
-    // Gérer l'image si elle est fournie
-    if (image) {
-      // Ici vous pouvez ajouter votre logique d'upload d'image
-      // Par exemple avec Cloudinary ou un autre service
-      // Pour l'exemple, on simule une URL
-      updateData.image = "https://example.com/image.jpg"
-    }
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (password) updateData.hashedPassword = await bcrypt.hash(password, 10);
 
     const updatedProfile = await prisma.user.update({
       where: { id: session.user.id },
-      data: updateData
-    })
+      data: updateData,
+    });
 
     // Revalider le chemin approprié selon le rôle
-    const isAdmin = session.user.role?.name === "ADMIN"
-    revalidatePath(isAdmin ? '/dashboard/admins/profile' : '/dashboard/users/profile')
+    const isAdmin = session.user.role?.name === "ADMIN";
+    revalidatePath(isAdmin ? "/dashboard/admins/profile" : "/dashboard/users/profile");
 
-    return { 
-      success: true, 
-      data: updatedProfile, 
-      message: "Profil mis à jour avec succès" 
-    }
-
+    return {
+      success: true,
+      data: updatedProfile,
+      message: "Profil mis à jour avec succès",
+    };
   } catch (error) {
-    console.error("Erreur dans updateProfile:", error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "Une erreur est survenue lors de la mise à jour" 
-    }
+    console.error("Erreur dans updateProfile:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Une erreur est survenue lors de la mise à jour",
+    };
   }
 }
 
