@@ -46,7 +46,10 @@ export async function POST(request: Request) {
       }
     });
 
-    return NextResponse.json({ message: "Utilisateur créé avec succès" });
+    if (user) {
+      return NextResponse.json({ message: "Utilisateur créé avec succès" });
+    }
+
     
   } catch (error) {
     console.error("Erreur lors de l'enregistrement:", error);

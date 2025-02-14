@@ -60,7 +60,7 @@ export default {
       
       return `${baseUrl}/dashboard`;
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (account?.provider === "google" && user.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email },

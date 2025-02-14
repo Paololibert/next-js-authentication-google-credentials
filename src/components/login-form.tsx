@@ -50,6 +50,7 @@ export function LoginForm({
         toast.success("Connexion réussie");
       }
     } catch (error) {
+      console.error("Erreur lors de la connexion:", error);
       toast.error("Une erreur est survenue");
     } finally {
       setIsLoading(false);

@@ -5,7 +5,7 @@ declare module "next-auth" {
     role?: {
       name: string
     }
-    permissions?: any
+    permissions?: string[] | string
   }
 
   interface Session {
@@ -13,7 +13,7 @@ declare module "next-auth" {
       role?: {
         name: string
       }
-      permissions?: any
+      permissions?: string[] | string
     }
   }
 }
@@ -23,6 +23,6 @@ declare module "next-auth/jwt" {
     role?: {
       name: string
     }
-    permissions?: any
+    permissions?: string[] | string
   }
 } 

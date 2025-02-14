@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+import {bcrypt} from 'bcryptjs'
 
 // Schéma simplifié sans rôle ni permissions
 const UpdateProfileSchema = z.object({
@@ -71,14 +72,13 @@ export async function updateProfile(formData: FormData) {
     const image = formData.get('image') as File || undefined
 
     // Préparer les données de mise à jour
-    const updateData: any = {
+    const updateData = {
       name,
       email,
     }
 
     // Ajouter le mot de passe s'il est fourni
     if (password) {
-      const bcrypt = require('bcryptjs')
       updateData.hashedPassword = await bcrypt.hash(password, 10)
     }
 
