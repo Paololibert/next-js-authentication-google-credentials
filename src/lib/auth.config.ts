@@ -1,7 +1,7 @@
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import type { NextAuthConfig } from "next-auth";
-import {prisma} from "./prisma";
+import { NextAuthConfig } from "next-auth";
+import { prisma } from "./prisma";
 import { signInSchema } from "./signInSchema";
 import bcrypt from "bcryptjs";
 
@@ -28,12 +28,15 @@ export default {
         const passwordsMatch = await bcrypt.compare(password, dbUser.hashedPassword);
         if (!passwordsMatch) return null;
 
+        // Mapper les permissions en chaîne ou tableau de chaînes
+        const permissions = dbUser.permissions.map(p => p.permission.name);
+
         return {
           id: dbUser.id,
           name: dbUser.name,
           email: dbUser.email,
           role: dbUser.role ? { name: dbUser.role.name } : undefined,
-          permissions: dbUser.permissions
+          permissions: permissions // Retourne les permissions sous forme de tableau de chaînes
         };
       }
     })
@@ -42,14 +45,14 @@ export default {
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role;
-        token.permissions = user.permissions;
+        token.permissions = user.permissions; // Permissions sous forme de tableau de chaînes
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
         session.user.role = token.role as { name: string };
-        session.user.permissions = token.permissions;
+        session.user.permissions = token.permissions as string[]; // On s'assure que permissions est un tableau de chaînes
       }
       return session;
     },
@@ -57,7 +60,6 @@ export default {
       if (url.startsWith(baseUrl)) {
         return url;
       }
-      
       return `${baseUrl}/dashboard`;
     },
     async signIn({ user, account }) {
@@ -86,8 +88,7 @@ export default {
             role: {
               connect: { name: "USER" }
             }
-          }
-        });
+          }});
       }
       return true;
     },
