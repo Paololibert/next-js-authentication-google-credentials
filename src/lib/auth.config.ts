@@ -20,27 +20,35 @@ export default {
         const { email, password } = parsedCredentials.data;
         const dbUser = await prisma.user.findUnique({
           where: { email },
-          include: { role: true, permissions: { include: { permission: true } } }
+          include: {
+            role: true,
+            permissions: { include: { permission: true } },
+          },
         });
 
         if (!dbUser?.hashedPassword) return null;
 
-        const passwordsMatch = await bcrypt.compare(password, dbUser.hashedPassword);
+        const passwordsMatch = await bcrypt.compare(
+          password,
+          dbUser.hashedPassword
+        );
         if (!passwordsMatch) return null;
 
         // Mapper les permissions en chaîne ou tableau de chaînes
-        const permissions = dbUser.permissions.map(p => p.permission.name);
+        const permissions = dbUser.permissions.map((p) => p.permission.name);
 
         return {
           id: dbUser.id,
           name: dbUser.name,
           email: dbUser.email,
           role: dbUser.role ? { name: dbUser.role.name } : undefined,
-          permissions: permissions // Retourne les permissions sous forme de tableau de chaînes
+          permissions: permissions, // Retourne les permissions sous forme de tableau de chaînes
         };
-      }
-    })
+      },
+    }),
   ],
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: true,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -66,7 +74,7 @@ export default {
       if (account?.provider === "google" && user.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email },
-          include: { role: true, permissions: true }
+          include: { role: true, permissions: true },
         });
 
         if (dbUser) {
@@ -74,8 +82,8 @@ export default {
             where: { id: dbUser.id },
             data: {
               name: user.name ?? dbUser.name,
-              image: user.image
-            }
+              image: user.image,
+            },
           });
           return true;
         }
@@ -86,15 +94,16 @@ export default {
             name: user.name ?? user.email,
             image: user.image,
             role: {
-              connect: { name: "USER" }
-            }
-          }});
+              connect: { name: "USER" },
+            },
+          },
+        });
       }
       return true;
     },
   },
   pages: {
-    signIn: '/login',
-    error: '/login'
+    signIn: "/login",
+    error: "/login",
   },
 } satisfies NextAuthConfig;

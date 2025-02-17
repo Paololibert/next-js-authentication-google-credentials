@@ -13,7 +13,7 @@ export default async function DashboardPage() {
     redirect("/dashboard/admins");
   }  else if (session.user.role?.name === "USER") {
     redirect("/dashboard/users");
-  } else {
+  } else if (session.user.role?.name === "") {
     redirect("/dashboard/users");
   }
 }
