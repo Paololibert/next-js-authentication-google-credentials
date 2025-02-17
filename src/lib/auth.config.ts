@@ -50,8 +50,8 @@ export default {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role;
-        token.permissions = user.permissions; // Permissions sous forme de tableau de chaînes
+        token.role = user?.role;
+        token.permissions = user?.permissions; // Permissions sous forme de tableau de chaînes
       }
       return token;
     },
