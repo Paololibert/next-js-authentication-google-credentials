@@ -13,7 +13,7 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Redirection depuis la racine du dashboard
+  // Redirection from the dashboard root
   if (isDashboardRoot) {
     if (userRole === "ADMIN") {
       return NextResponse.redirect(new URL("/dashboard/admins", req.url));
@@ -21,13 +21,13 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/dashboard/users", req.url));
   }
 
-  // Si admin essaie d'accéder au dashboard user
+  // If admin tries to access the user dashboard
   if (userRole === "ADMIN" && isUserPath) {
     return NextResponse.redirect(new URL("/dashboard/admins", req.url));
   }
 
-  // Si user normal essaie d'accéder au dashboard admin
-  if (userRole !== "ADMIN" && isAdminPath) {
+  // If normal user tries to access the admin dashboard
+  if (userRole !== "ADMIN" && isAdminPath || userRole !== "USER" && isUserPath) {
     return NextResponse.redirect(new URL("/dashboard/users", req.url));
   }
 

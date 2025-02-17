@@ -11,6 +11,8 @@ export default async function DashboardPage() {
   if (session.user.role?.name === "ADMIN") {
     console.log("Redirection vers le dashboard admins");
     redirect("/dashboard/admins");
+  }  else if (session.user.role?.name === "USER") {
+    redirect("/dashboard/users");
   } else {
     redirect("/dashboard/users");
   }
