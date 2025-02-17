@@ -47,7 +47,7 @@ export default {
       },
     }),
   ],
-  /* callbacks: {
+  callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.role = user?.role;
@@ -99,7 +99,7 @@ export default {
       }
       return true;
     },
-  }, */
+  },
   pages: {
     signIn: "/login",
     error: "/login",
